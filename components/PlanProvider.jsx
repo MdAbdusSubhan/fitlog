@@ -1,9 +1,9 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { Check, Info } from "lucide-react";
 
-const STORAGE_KEY = "fitlog:v1";
+const PLAN_LIMIT = 5;
 const EMPTY = { plan: [], saved: [], done: [] };
 
 const PlanContext = createContext(null);
@@ -14,40 +14,10 @@ export function usePlan() {
   return ctx;
 }
 
-function readStored() {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return EMPTY;
-    const parsed = JSON.parse(raw);
-    return {
-      plan: Array.isArray(parsed.plan) ? parsed.plan : [],
-      saved: Array.isArray(parsed.saved) ? parsed.saved : [],
-      done: Array.isArray(parsed.done) ? parsed.done : [],
-    };
-  } catch {
-    return EMPTY;
-  }
-}
-
 export default function PlanProvider({ children }) {
   const [state, setState] = useState(EMPTY);
-  const [ready, setReady] = useState(false);
   const [toasts, setToasts] = useState([]);
   const toastId = useRef(0);
-
-  useEffect(() => {
-    setState(readStored());
-    setReady(true);
-  }, []);
-
-  useEffect(() => {
-    if (!ready) return;
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch {
-      return;
-    }
-  }, [state, ready]);
 
   const notify = useCallback((message, tone = "success") => {
     const id = ++toastId.current;
@@ -56,9 +26,14 @@ export default function PlanProvider({ children }) {
   }, []);
 
   const addToPlan = useCallback(
-    (id) => {
+    (raw) => {
+      const id = String(raw);
       if (state.plan.includes(id)) {
         notify("Already in today's plan", "info");
+        return;
+      }
+      if (state.plan.length >= PLAN_LIMIT) {
+        notify("Today's plan is full. Finish or remove a lift first", "info");
         return;
       }
       setState((s) => ({ ...s, plan: [...s.plan, id] }));
@@ -68,7 +43,8 @@ export default function PlanProvider({ children }) {
   );
 
   const saveForLater = useCallback(
-    (id) => {
+    (raw) => {
+      const id = String(raw);
       if (state.saved.includes(id)) {
         notify("Already in your saved lifts", "info");
         return;
@@ -80,7 +56,8 @@ export default function PlanProvider({ children }) {
   );
 
   const removeFromPlan = useCallback(
-    (id) => {
+    (raw) => {
+      const id = String(raw);
       setState((s) => ({
         ...s,
         plan: s.plan.filter((x) => x !== id),
@@ -92,7 +69,8 @@ export default function PlanProvider({ children }) {
   );
 
   const removeFromSaved = useCallback(
-    (id) => {
+    (raw) => {
+      const id = String(raw);
       setState((s) => ({ ...s, saved: s.saved.filter((x) => x !== id) }));
       notify("Removed from saved");
     },
@@ -100,7 +78,8 @@ export default function PlanProvider({ children }) {
   );
 
   const markDone = useCallback(
-    (id) => {
+    (raw) => {
+      const id = String(raw);
       if (state.done.includes(id)) return;
       setState((s) => ({ ...s, done: [...s.done, id] }));
       notify("Marked as done");
@@ -113,14 +92,14 @@ export default function PlanProvider({ children }) {
       plan: state.plan,
       saved: state.saved,
       done: state.done,
-      ready,
+      ready: true,
       addToPlan,
       saveForLater,
       removeFromPlan,
       removeFromSaved,
       markDone,
     }),
-    [state, ready, addToPlan, saveForLater, removeFromPlan, removeFromSaved, markDone]
+    [state, addToPlan, saveForLater, removeFromPlan, removeFromSaved, markDone]
   );
 
   return (

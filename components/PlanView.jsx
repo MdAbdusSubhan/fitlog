@@ -25,8 +25,8 @@ export default function PlanView() {
   const [tab, setTab] = useState("plan");
   const [sortKey, setSortKey] = useState("duration");
 
-  const byId = useMemo(() => new Map(workouts.map((w) => [w.id, w])), [workouts]);
-  const resolve = (ids) => ids.map((id) => byId.get(id)).filter(Boolean);
+  const byId = useMemo(() => new Map(workouts.map((w) => [String(w.id), w])), [workouts]);
+  const resolve = (ids) => ids.map((id) => byId.get(String(id))).filter(Boolean);
 
   const planItems = resolve(plan);
   const savedItems = resolve(saved);
@@ -136,7 +136,7 @@ export default function PlanView() {
                 <PlanCard
                   workout={workout}
                   mode={tab}
-                  done={tab === "plan" && done.includes(workout.id)}
+                  done={tab === "plan" && done.includes(String(workout.id))}
                   onDone={() => markDone(workout.id)}
                   onAdd={() => addToPlan(workout.id)}
                   onRemove={() => (tab === "plan" ? removeFromPlan(workout.id) : removeFromSaved(workout.id))}
