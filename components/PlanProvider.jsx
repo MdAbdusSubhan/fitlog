@@ -4,7 +4,6 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { Check, Info } from "lucide-react";
 
 const STORAGE_KEY = "fitlog:v1";
-const PLAN_LIMIT = 5;
 const EMPTY = { plan: [], saved: [], done: [] };
 
 const PlanContext = createContext(null);
@@ -60,10 +59,6 @@ export default function PlanProvider({ children }) {
     (id) => {
       if (state.plan.includes(id)) {
         notify("Already in today's plan", "info");
-        return;
-      }
-      if (state.plan.length >= PLAN_LIMIT) {
-        notify("Today's plan is full. Finish or remove a lift first", "info");
         return;
       }
       setState((s) => ({ ...s, plan: [...s.plan, id] }));

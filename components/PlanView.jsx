@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { ChevronDown } from "lucide-react";
 import useWorkouts from "@/lib/useWorkouts";
 import { usePlan } from "./PlanProvider";
 import PlanCard from "./PlanCard";
@@ -12,17 +13,25 @@ const TABS = [
   { value: "saved", label: "Saved" },
 ];
 
+const SORTS = [
+  { value: "duration", label: "Duration" },
+  { value: "caloriesBurned", label: "Calories" },
+  { value: "rating", label: "Rating" },
+];
+
 export default function PlanView() {
   const { workouts, status, retry } = useWorkouts();
   const { plan, saved, done, ready, addToPlan, markDone, removeFromPlan, removeFromSaved } = usePlan();
   const [tab, setTab] = useState("plan");
+  const [sortKey, setSortKey] = useState("duration");
 
   const byId = useMemo(() => new Map(workouts.map((w) => [w.id, w])), [workouts]);
   const resolve = (ids) => ids.map((id) => byId.get(id)).filter(Boolean);
 
   const planItems = resolve(plan);
   const savedItems = resolve(saved);
-  const items = tab === "plan" ? planItems : savedItems;
+  const activeItems = tab === "plan" ? planItems : savedItems;
+  const items = [...activeItems].sort((a, b) => b[sortKey] - a[sortKey] || a.id - b.id);
 
   const metrics = [
     { label: "Exercises", value: planItems.length },
@@ -46,24 +55,49 @@ export default function PlanView() {
         ))}
       </dl>
 
-      <div role="tablist" aria-label="Plan sections" className="mt-8 flex gap-2 border-b border-line">
-        {TABS.map((t) => {
-          const active = tab === t.value;
-          return (
-            <button
-              key={t.value}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              onClick={() => setTab(t.value)}
-              className={`-mb-px border-b-2 px-4 py-3 font-display text-base font-semibold uppercase tracking-wide transition-colors ${
-                active ? "border-accent text-accent" : "border-transparent text-muted hover:text-white"
-              }`}
-            >
-              {t.label}
-            </button>
-          );
-        })}
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-b border-line">
+        <div role="tablist" aria-label="Plan sections" className="flex gap-2">
+          {TABS.map((t) => {
+            const active = tab === t.value;
+            return (
+              <button
+                key={t.value}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setTab(t.value)}
+                className={`-mb-px border-b-2 px-4 py-3 font-display text-base font-semibold uppercase tracking-wide transition-colors ${
+                  active ? "border-accent text-accent" : "border-transparent text-muted hover:text-white"
+                }`}
+              >
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="relative mb-2 w-full sm:w-52">
+          <label htmlFor="sort" className="sr-only">
+            Sort by
+          </label>
+          <select
+            id="sort"
+            value={sortKey}
+            onChange={(e) => setSortKey(e.target.value)}
+            className="w-full cursor-pointer appearance-none rounded-lg border border-line bg-panel py-2.5 pl-4 pr-10 text-sm font-semibold text-white"
+          >
+            {SORTS.map((s) => (
+              <option key={s.value} value={s.value}>
+                Sort By: {s.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            size={18}
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-accent"
+            aria-hidden="true"
+          />
+        </div>
       </div>
 
       <div role="tabpanel" className="mt-6">

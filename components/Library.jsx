@@ -30,28 +30,7 @@ export default function Library() {
           </h2>
           <p className="mt-2 text-muted">Twelve lifts covering every major muscle group.</p>
         </div>
-        <div className="relative w-full sm:w-52">
-          <label htmlFor="sort" className="sr-only">
-            Sort by
-          </label>
-          <select
-            id="sort"
-            value={sortKey}
-            onChange={(e) => setSortKey(e.target.value)}
-            className="w-full cursor-pointer appearance-none rounded-lg border border-line bg-panel py-2.5 pl-4 pr-10 text-sm font-semibold text-white"
-          >
-            {SORTS.map((s) => (
-              <option key={s.value} value={s.value}>
-                Sort By: {s.label}
-              </option>
-            ))}
-          </select>
-          <ChevronDown
-            size={18}
-            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-accent"
-            aria-hidden="true"
-          />
-        </div>
+        
       </div>
 
       {status === "loading" && <Spinner />}
