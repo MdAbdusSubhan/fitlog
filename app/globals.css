@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0b0b0b;
+  --color-panel: #141414;
+  --color-panel-2: #1b1b1b;
+  --color-line: #2a2a2a;
+  --color-accent: #ccff00;
+  --color-muted: #9a9a9a;
+  --font-display: "Oswald Variable", "Oswald", Impact, sans-serif;
+  --font-sans: "Inter Variable", "Inter", system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+body {
+  background: var(--color-ink);
+  color: #f2f2f2;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@keyframes spin-lift {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-toast {
+  animation: toast-in 0.2s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-toast,
+  .animate-spin {
+    animation-duration: 0.01ms;
+  }
+}
